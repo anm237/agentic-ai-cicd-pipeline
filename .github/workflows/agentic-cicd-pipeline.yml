@@ -1,17 +1,11 @@
 name: Agentic CICD Pipeline
-
 on:
   push:
   pull_request:
-
 jobs:
-
   security-agent:
-
     runs-on: ubuntu-latest
-
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -26,25 +20,33 @@ jobs:
 
       - name: Run Bandit Scan
         run: |
-          bandit -r app/ -f json -o bandit-report.json
+          bandit -r app/ -f json -o bandit-report.json --exit-zero
 
       - name: Install Ollama
         run: |
           curl -fsSL https://ollama.com/install.sh | sh
+          # Start Ollama as background service
+          nohup ollama serve > ollama.log 2>&1 &
+          # Wait for Ollama to be ready
+          sleep 10
 
       - name: Pull LLM Model
         run: |
           ollama pull qwen2.5-coder
 
       - name: Run AI Security Agent
+        if: always()
         run: |
+          mkdir -p reports
           python scripts/ai_security_agent.py
 
       - name: Run Decision Engine
+        if: always()
         run: |
           python scripts/decision_engine.py
 
       - name: Upload Reports
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ai-security-analysis
