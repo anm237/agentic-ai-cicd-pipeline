@@ -1,11 +1,21 @@
 name: Agentic CICD Pipeline
+
 on:
   push:
   pull_request:
+
+permissions:
+  contents: write      
+  pull-requests: write
+
 jobs:
+
   security-agent:
+
     runs-on: ubuntu-latest
+
     steps:
+
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -17,6 +27,7 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install -r app/requirements.txt
+          pip install PyGithub
 
       - name: Run Bandit Scan
         run: |
@@ -25,9 +36,7 @@ jobs:
       - name: Install Ollama
         run: |
           curl -fsSL https://ollama.com/install.sh | sh
-          # Start Ollama as background service
           nohup ollama serve > ollama.log 2>&1 &
-          # Wait for Ollama to be ready
           sleep 10
 
       - name: Pull LLM Model
@@ -44,6 +53,13 @@ jobs:
         if: always()
         run: |
           python scripts/decision_engine.py
+
+      - name: Create Remediation PR
+        if: always()
+        run: |
+          python scripts/create_fix_pr.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Reports
         if: always()
