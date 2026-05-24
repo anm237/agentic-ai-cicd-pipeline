@@ -1,21 +1,14 @@
 name: Agentic CICD Pipeline
-
 on:
   push:
   pull_request:
-
 permissions:
   contents: write      
   pull-requests: write
-
 jobs:
-
   security-agent:
-
     runs-on: ubuntu-latest
-
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v4
 
