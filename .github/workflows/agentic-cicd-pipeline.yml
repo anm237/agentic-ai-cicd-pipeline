@@ -57,7 +57,7 @@ jobs:
       - name: Create Remediation PR
         if: always()
         run: |
-          python scripts/create_fix_pr.py
+          python scripts/create_pr.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
